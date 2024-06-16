@@ -1,11 +1,11 @@
 <div align="center">
 <h1 align="center">ColorOS Rom Modify</h1>
-<img src="https://v2.jinrishici.com/one.svg?font-size=24&spacing=2&color=Black">
+<img src="https://logowik.com/content/uploads/images/oneplus-new8781.jpg">
 </div>
 
 ## Introduction 👋
 
-适用于 ColorOS 12，机型代号 waffle 。
+适用于 OnePlus 12，机型代号 waffle 。
 
 在 termux 中 clone 本项目，先执行 setup.sh 安装环境，再执行 start.sh <包名> 即可。
 
