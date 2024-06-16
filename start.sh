@@ -1,19 +1,20 @@
 #!/bin/bash
 #############################################
 # File Name: start.sh
-# Version: v1.2
-# Author: chuest2
+# Version: v1.3
+# Author: chuest2, SnowWolf725
 # Organization: chuest
 # Github: https://github.com/chuest2/RomTools
+# Github: https://github.com/snowwolf725/OP12RomTools
 #############################################
 #
-# Usage: start.sh < miui_HOUJI_*.zip >
+# Usage: start.sh < *.zip >
 #
 # Note: Please change the SUPERKEY located at TODO
 #
 
 echo "****************************"
-echo "     HyperOS Rom Modify     "
+echo "     ColorOS Rom Modify     "
 echo "****************************"
 
 N='\033[0m'
@@ -28,7 +29,7 @@ function main(){
     mkdir work
 
     if [ ! -f ${romName} ] ;then
-        romLink=https://cdnorg.d.miui.com/$(echo "${romName}" | awk -F "_" '{print $3}')/${romName}
+        romLink=${romName}
         # romLink=https://bn.d.miui.com/$(echo "${romName}" | awk -F "_" '{print $3}')/${romName}
         # romLink=https://bkt-sgp-miui-ota-update-alisgp.oss-ap-southeast-1.aliyuncs.com/$(echo "${romName}" | awk -F "_" '{print $3}')/${romName}
         echo -e "$(date "+%m/%d %H:%M:%S") [${G}NOTICE${N}] Downloading ${romName}"
@@ -42,7 +43,7 @@ function main(){
 
     cd work
     mkdir images
-    rm -rf META-INF apex_info.pb care_map.pb payload_properties.txt
+    rm -rf META-INF payload_properties.txt
 
     echo -e "$(date "+%m/%d %H:%M:%S") [${G}NOTICE${N}] Dumping images from payload.bin"
     ${rootPath}/bin/payload-dumper -o ${rootPath}/work/images payload.bin >/dev/null 2>&1
@@ -53,17 +54,17 @@ function main(){
     unpackErofsImg product
     unpackErofsImg system_ext
 
-    removeAVB
-    removeSignVerify
-    replaceApks
-    removeFiles
-    themeManagerPatch
-    preventThemeRecovery
-    personalAssistantPatch
-    mmsVerificationCodeAutoCopy
-    powerKeeperPatch
-    settingsPatch
-    miuiSystemUIPatch
+    #removeAVB
+    #removeSignVerify
+    #replaceApks
+    #removeFiles
+    #themeManagerPatch
+    #preventThemeRecovery
+    #personalAssistantPatch
+    #mmsVerificationCodeAutoCopy
+    #powerKeeperPatch
+    #settingsPatch
+    Debloat
     modify
 
     repackErofsImg system
@@ -72,13 +73,12 @@ function main(){
     repackErofsImg system_ext
 
     mv images/odm.img odm.img
-    mv images/mi_ext.img mi_ext.img
     mv images/system_dlkm.img system_dlkm.img
     mv images/vendor_dlkm.img vendor_dlkm.img
 
     makeSuperImg
     removeVbmetaVerify
-    replaceCust
+    #replaceCust
     kernelsuPatch
     # apatchPatch <SUPERKEY> # TODO
 
@@ -457,22 +457,9 @@ function settingsPatch(){
 
 }
 
-function miuiSystemUIPatch(){
-    echo -e "$(date "+%m/%d %H:%M:%S") [${G}NOTICE${N}] Decompiling MiuiSystemUI.apk"
-    java -jar ${rootPath}/bin/APKEditor.jar d -t raw -f -no-dex-debug -i system_ext/system_ext/priv-app/MiuiSystemUI/MiuiSystemUI.apk -o tmp/MiuiSystemUI >/dev/null 2>&1
-
-    targetArg='0x3e8' # 1s
-	targetSpeedFile=$(find tmp/MiuiSystemUI/smali/classes*/com/android/systemui/statusbar/policy/ -type f -name 'NetworkSpeedController*.smali' 2>/dev/null | xargs grep -rl 'const-wide/16 v0, 0xfa0' | sed 's/^\.\///' | sort)
-	sed -i "s/const-wide\/16 v0, 0xfa0/const-wide\/16 v0, $targetArg/" $targetSpeedFile
-
+function Debloat(){
     rm -f system_ext/system_ext/priv-app/MiuiSystemUI/MiuiSystemUI.apk
     rm -f system_ext/system_ext/priv-app/MiuiSystemUI/oat/arm64/*
-
-    echo -e "$(date "+%m/%d %H:%M:%S") [${G}NOTICE${N}] Rebuilding MiuiSystemUI.apk"
-    java -jar ${rootPath}/bin/APKEditor.jar b -f -i tmp/MiuiSystemUI -o tmp/MiuiSystemUI.apk >/dev/null 2>&1
-    zipalign 4 tmp/MiuiSystemUI.apk system_ext/system_ext/priv-app/MiuiSystemUI/MiuiSystemUI.apk
-    ${rootPath}/bin/dex2oat --dex-file=system_ext/system_ext/priv-app/MiuiSystemUI/MiuiSystemUI.apk --instruction-set=arm64 --compiler-filter=speed --oat-file=system_ext/system_ext/priv-app/MiuiSystemUI/oat/arm64/MiuiSystemUI.odex
-    rm -rf tmp
 }
 
 function modify(){
