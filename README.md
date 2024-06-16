@@ -1,6 +1,6 @@
 <div align="center">
 <h1 align="center">ColorOS Rom Modify</h1>
-<img src="https://logowik.com/content/uploads/images/oneplus-new8781.jpg">
+<img src="https://logowik.com/content/uploads/images/oneplus-new8781.jpg" style="width:400px;">
 </div>
 
 ## Introduction 👋
