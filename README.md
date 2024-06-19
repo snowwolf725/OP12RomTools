@@ -42,4 +42,4 @@
 
 ## Visitors
 
-![:chuest2](https://count.getloli.com/get/@:snowwolf725)
+![:snowwolf725](https://count.getloli.com/get/@:snowwolf725)
