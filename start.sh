@@ -109,38 +109,15 @@ function repackErofsImg(){
 
 function makeSuperImg(){
     echo -e "$(date "+%m/%d %H:%M:%S") [${G}NOTICE${N}] Repacking Super image"
-    # 9126805504
-    ${rootPath}/bin/lpmake --metadata-size 65536 \
-    --super-name super \
-    --device super:8321499136 \
-    --group main_a:8321499136 \
-    --group main_b:8321499136 \
-    --metadata-slots 3 --virtual-ab \
-    --partition system_a:readonly:$(echo $(stat -c "%s" system.img) | bc):main_a \
-    --image system_a=system.img \
-    --partition system_b:readonly:0:main_b \
-    --partition vendor_a:readonly:$(echo $(stat -c "%s" vendor.img) | bc):main_a \
-    --image vendor_a=vendor.img \
-    --partition vendor_b:readonly:0:main_b \
-    --partition product_a:readonly:$(echo $(stat -c "%s" product.img) | bc):main_a \
-    --image product_a=product.img \
-    --partition product_b:readonly:0:main_b \
-    --partition system_ext_a:readonly:$(echo $(stat -c "%s" system_ext.img) | bc):main_a \
-    --image system_ext_a=system_ext.img --partition system_ext_b:readonly:0:main_b \
-    --partition odm_a:readonly:$(echo $(stat -c "%s" odm.img) | bc):main_a \
-    --image odm_a=odm.img \
-    --partition odm_b:readonly:0:main_b \
-    --partition mi_ext_a:readonly:$(echo $(stat -c "%s" mi_ext.img) | bc):main_a \
-    --image mi_ext_a=mi_ext.img \
-    --partition mi_ext_b:readonly:0:main_b \
-    --partition system_dlkm_a:readonly:$(echo $(stat -c "%s" system_dlkm.img) | bc):main_a \
-    --image system_dlkm_a=system_dlkm.img \
-    --partition system_dlkm_b:readonly:0:main_b \
-    --partition vendor_dlkm_a:readonly:$(echo $(stat -c "%s" vendor_dlkm.img) | bc):main_a \
-    --image vendor_dlkm_a=vendor_dlkm.img \
-    --partition vendor_dlkm_b:readonly:0:main_b \
-    --sparse \
-    --output images/super.img >/dev/null 2>&1
+    # 17179869184
+    parts = "my_bigball.img my_carrier.img my_company.img my_engineering.img my_heytap.img my_manifest.img my_preload.img my_product.img my_region.img my_stock.img odm.img product.img system.img system_dlkm.img system_ext.img vendor.img vendor_dlkm.img"
+    options=" --metadata-size 65536 --super-name super -block-size=4096  --device super:17179869184  --group qti_dynamic_partitions_a:17175674880  --group cow:0  --metadata-slots 3 --virtual-ab --sparse "
+    for part in $parts
+    do
+       ootions=${options}  --partition system_a:readonly:$(echo $(stat -c $part) | bc):qti_dynamic_partitions_a --image $part_a=$part.img
+    done
+    
+    ${rootPath}/bin/lpmake $options  --output images/super.img >/dev/null 2>&1
 }
 
 function removeVbmetaVerify(){
