@@ -25,8 +25,11 @@ B='\033[1;34m'
 function main(){
     romName=${1}
     rootPath=`pwd`
+    status=0
     export LD_LIBRARY_PATH=${rootPath}/lib
-    mkdir work
+    if [ ! -d work ] ; then
+       mkdir work
+    fi
 
     if [ ! -f ${romName} ] ;then
         romLink=${romName}
@@ -35,66 +38,96 @@ function main(){
         echo -e "$(date "+%m/%d %H:%M:%S") [${G}NOTICE${N}] Downloading ${romName}"
         aria2c -s 8 -x 8 $romLink
     fi
-
-    echo -e "$(date "+%m/%d %H:%M:%S") [${G}NOTICE${N}] Unzipping ${romName}"
-    export UNZIP_DISABLE_ZIPBOMB_DETECTION=TRUE
-    unzip -o $romName -d work >/dev/null 2>&1
-    # rm -f $romName
+    if prompt_continue "payload.bin exist Overwrite?" "work/payload.bin"; then
+       echo -e "$(date "+%m/%d %H:%M:%S") [${G}NOTICE${N}] Unzipping ${romName}"
+       export UNZIP_DISABLE_ZIPBOMB_DETECTION=TRUE
+       #unzip -o $romName -d work >/dev/null 2>&1
+    fi
 
     cd work
-    mkdir images
+    if [ ! -d images ] ; then
+       mkdir images
+    fi
     rm -rf META-INF payload_properties.txt
 
-    echo -e "$(date "+%m/%d %H:%M:%S") [${G}NOTICE${N}] Dumping images from payload.bin"
-    ${rootPath}/bin/payload-dumper -o ${rootPath}/work/images payload.bin >/dev/null 2>&1
-    rm -rf payload.bin
+    if prompt_continue "images/system.img exist overwrite?" "images/system.img"; then
+       echo -e "$(date "+%m/%d %H:%M:%S") [${G}NOTICE${N}] Dumping images from payload.bin"
+       #${rootPath}/bin/payload-dumper -o ${rootPath}/work/images payload.bin >/dev/null 2>&1
+       #rm -rf payload.bin
+    fi
 
-    unpackErofsImg system
-    unpackErofsImg vendor
+    unpackErofsImg my_bigball
+    unpackErofsImg my_stock
     unpackErofsImg product
+    unpackErofsImg system
     unpackErofsImg system_ext
 
     #removeAVB
     #removeSignVerify
     #replaceApks
-    #removeFiles
+    removeFiles
     #themeManagerPatch
     #preventThemeRecovery
     #personalAssistantPatch
     #mmsVerificationCodeAutoCopy
     #powerKeeperPatch
     #settingsPatch
-    Debloat
-    modify
+    #Debloat
+    #modify
 
-    repackErofsImg system
-    repackErofsImg vendor
-    repackErofsImg product
-    repackErofsImg system_ext
+    #repackErofsImg my_bigball
+    #repackErofsImg my_stock
+    #repackErofsImg product
+    #repackErofsImg system
+    #repackErofsImg system_ext
+    
 
     mv images/odm.img odm.img
     mv images/system_dlkm.img system_dlkm.img
-    mv images/vendor_dlkm.img vendor_dlkm.img
+    mv images/my_carrier.img my_carrier.img
+    mv images/my_engineering.img my_engineering.img
+    mv images/my_heytap.img my_heytap.img
+    mv images/my_manifest.img my_manifest.img
+    mv images/my_product.img my_product.img
+    mv images/my_region.img my_region.img
+    cp ${rootPath}/files/images/my_company.img my_company.img
+    cp ${rootPath}/files/images/my_preload.img my_preload.img
 
     makeSuperImg
-    removeVbmetaVerify
+    #removeVbmetaVerify
     #replaceCust
-    kernelsuPatch
+    #kernelsuPatch
     # apatchPatch <SUPERKEY> # TODO
 
-    rm -rf system vendor product system_ext system.img vendor.img product.img system_ext.img odm.img mi_ext.img system_dlkm.img vendor_dlkm.img init_boot.img boot.img
-    cp -rf ${rootPath}/files/flash.bat ${rootPath}/work/flash.bat
+    #rm -rf system vendor product system_ext system.img vendor.img product.img system_ext.img odm.img mi_ext.img system_dlkm.img vendor_dlkm.img init_boot.img boot.img
+    #cp -rf ${rootPath}/files/flash.bat ${rootPath}/work/flash.bat
     echo -e "$(date "+%m/%d %H:%M:%S") [${G}NOTICE${N}] Compressing all images"
     # zip -q -r rom.zip images flash.bat
     # name=miui_chuest_HOUJI_$(echo "${romName}" | awk -F "_" '{print $3}')_$(((md5sum rom.zip) | awk '{print $1}') | cut -c -10)_14.0
     # mv rom.zip ${name}.zip
 }
 
+function prompt_continue {
+    local msg=$1
+    local file=$2
+    if [ ! -f $file ];then
+      return 0;
+    fi
+    while true; do
+        read -p "$msg (y/n): " choice
+        case "$choice" in
+            [Yy]* ) return 0;;
+            [Nn]* ) return 1;;
+            * ) echo "Please input y or n.";;
+        esac
+    done
+}
+
 function unpackErofsImg(){
     mv images/${1}.img ${1}.img
     echo -e "$(date "+%m/%d %H:%M:%S") [${G}NOTICE${N}] Unpacking ${1} image"
     ${rootPath}/bin/extract.erofs -i ${1}.img -o ${1} -x >/dev/null 2>&1
-    rm -rf ${1}.img
+    #rm -rf ${1}.img
 }
 
 function repackErofsImg(){
@@ -110,13 +143,12 @@ function repackErofsImg(){
 function makeSuperImg(){
     echo -e "$(date "+%m/%d %H:%M:%S") [${G}NOTICE${N}] Repacking Super image"
     # 17179869184
-    parts = "my_bigball.img my_carrier.img my_company.img my_engineering.img my_heytap.img my_manifest.img my_preload.img my_product.img my_region.img my_stock.img odm.img product.img system.img system_dlkm.img system_ext.img vendor.img vendor_dlkm.img"
+    parts="my_bigball my_carrier my_company my_engineering my_heytap my_manifest my_preload my_product my_region my_stock odm product system system_dlkm system_ext vendor vendor_dlkm"
     options=" --metadata-size 65536 --super-name super -block-size=4096  --device super:17179869184  --group qti_dynamic_partitions_a:17175674880  --group cow:0  --metadata-slots 3 --virtual-ab --sparse "
     for part in $parts
     do
-       ootions=${options}  --partition system_a:readonly:$(echo $(stat -c $part) | bc):qti_dynamic_partitions_a --image $part_a=$part.img
+       options="${options}  --partition ${part}_a:readonly:$(wc -c < ${part}.img):qti_dynamic_partitions_a --image ${part}_a=${part}.img"
     done
-    
     ${rootPath}/bin/lpmake $options  --output images/super.img >/dev/null 2>&1
 }
 
