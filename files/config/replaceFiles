@@ -1,0 +1,11 @@
+system/system/system/etc/permissions/EuiccGoogle_grant_permissions_list.xml
+system/system/system/etc/permissions/android.hardware.telephony.euicc.xml
+system/system/system/priv-app/EuiccGoogle/oat/arm64/EuiccGoogle.vdex
+system/system/system/priv-app/EuiccGoogle/EuiccGoogle.apk
+product/product/etc/permissions/privapp-permissions-gms-international-product.xml
+product/product/priv-app/AndroidAutoStub/AndroidAutoStub.apk
+odm/odm/etc/camera/config/oplus_camera_config
+odm/odm/etc/camera/config/oplus_camera_preview_decision_config.json
+my_product/my_product/etc/extension/com.oplus.app-features.xml
+my_product/my_product/media/bootanimation/rbootanimation.zip
+my_product/my_product/media/bootanimation/bootanimation.zip
